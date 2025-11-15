@@ -7,9 +7,11 @@ public class BinaryTree {
         int value;
         Node left;
         Node right;
+        int height;
 
         public Node(int value) {
             this.value = value;
+            this.height = 0;
         }
     }
 
@@ -32,7 +34,8 @@ public class BinaryTree {
                 node.right = add(node.right, value);
             }
         }
-        return node;
+        updateHeight(node);
+        return rebalance(node);
     }
 
     public void remove(int value) {
@@ -74,6 +77,67 @@ public class BinaryTree {
         return temp;
     }
 
+    private int height(Node node) {
+        if (node == null) return -1;
+        return node.height;
+    }
+
+    private void updateHeight(Node node) {
+        int left = 1 + height(node.left);
+        int right = 1 + height(node.right);
+        node.height = (left > right) ? left : right;
+    }
+
+    private int balanceFactor(Node node) {
+        return height(node.left) - height(node.right);
+    }
+
+    private Node rebalance(Node node) {
+        int bf = balanceFactor(node);
+        if (bf < -1 && balanceFactor(node.right) <= 0) {
+            return rotateLeft(node);
+        }
+        if (bf > 1 && balanceFactor(node.left) >= 0) {
+            return rotateRight(node);
+        }
+        if (bf < -1 && balanceFactor(node.right) > 0) {
+            node.right = rotateRight(node.right);
+            return rotateLeft(node);
+        }
+        if (bf > 1 && balanceFactor(node.left) < 0) {
+            node.left = rotateLeft(node.left);
+            return rotateRight(node);
+        }
+
+        return node;
+    }
+
+    private Node rotateLeft(Node node) {
+        Node newNode = node.right;
+        Node leftRight = newNode.left;
+
+        newNode.left = node;
+        node.right = leftRight;
+
+        updateHeight(node);
+        updateHeight(newNode);
+
+        return newNode;
+    }
+
+    private Node rotateRight(Node node) {
+        Node newNode = node.left;
+        Node rightLeft = newNode.right;
+
+        node.left = rightLeft;
+        newNode.right = node;
+
+        updateHeight(node);
+        updateHeight(newNode);
+
+        return newNode;
+    }
+
     public void nodeQuantity() {
         int quantity = nodeQuantity(root);
         System.out.println("Node quantity: " + quantity);
@@ -98,7 +162,7 @@ public class BinaryTree {
 
     public void treeWidth() {
         int largura = treeWidth(root);
-        System.out.print("Largura: "+largura);
+        System.out.print("Largura: " + largura);
         System.out.println();
     }
 
@@ -120,7 +184,7 @@ public class BinaryTree {
 
     public void treeHeight() {
         int altura = treeHeight(root);
-        System.out.print("Altura: "+altura);
+        System.out.print("Altura: " + altura);
         System.out.println();
     }
 
@@ -146,10 +210,10 @@ public class BinaryTree {
     }
 
     private void printLeafs(Node node) {
-        if(node == null) return;
+        if (node == null) return;
 
-        if(node.left == null && node.right == null) {
-            System.out.print(node.value+" - ");
+        if (node.left == null && node.right == null) {
+            System.out.print(node.value + " - ");
         }
 
         printLeafs(node.left);
@@ -207,13 +271,13 @@ public class BinaryTree {
 
     }
 
-    private void printTree(Node root, int nivel) {
-        if (root == null) return;
-        printTree(root.right, nivel + 1);
+    private void printTree(Node node, int nivel) {
+        if (node == null) return;
+        printTree(node.right, nivel + 1);
         for (int i = 0; i < nivel; i++) {
             System.out.print("    ");
         }
-        System.out.println(root.value);
-        printTree(root.left, nivel + 1);
+        System.out.println(node.value+"("+node.height+"/"+balanceFactor(node)+")");
+        printTree(node.left, nivel + 1);
     }
 }
